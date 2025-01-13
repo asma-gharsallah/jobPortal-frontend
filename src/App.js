@@ -11,6 +11,8 @@ import JobDetail from "./components/jobs/JobDetail";
 import UserProfile from "./components/profile/UserProfile";
 import PrivateRoute from "./components/auth/PrivateRoute";
 import "./App.css";
+import AddJob from "./components/jobs/AddJob";
+import UpdateJob from "./components/jobs/UpdateJob";
 
 function App() {
   return (
@@ -34,6 +36,9 @@ function App() {
 
               <Route path="/jobs" element={<JobList />} />
               <Route path="/jobs/:id" element={<JobDetail />} />
+              <Route path="/jobs/AddJob" element={<AddJob />} />
+              <Route path="/jobs/UpdateJob/:jobId" element={<UpdateJob />} />
+
               <Route
                 path="/profile"
                 element={

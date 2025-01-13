@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import { FaEye, FaEyeSlash } from 'react-icons/fa'; // Importation des icônes
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false); // Déclaration correcte de l'état pour afficher/masquer le mot de passe
   const navigate = useNavigate();
   const { login } = useAuth();
 
@@ -15,14 +17,19 @@ const Login = () => {
     try {
       setError('');
       setLoading(true);
-      await login(email, password);
-      navigate('/dashboard');
+      const user = await login(email, password);
+      if (user.role === 'user') {
+        navigate('/profile');
+      } else {
+        navigate('/dashboard');
+      } 
     } catch (err) {
       setError(err.message);
     } finally {
       setLoading(false);
     }
   };
+  
 
   return (
     <div className="max-w-md mx-auto">
@@ -47,19 +54,29 @@ const Login = () => {
               required
             />
           </div>
+
           <div className="mb-6">
             <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="password">
               Password
             </label>
-            <input
-              type="password"
-              id="password"
-              className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-red-500"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
+            <div className="relative">
+              <input
+                type={showPassword ? 'text' : 'password'} // Toggle between text and password
+                id="password"
+                className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-red-500"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+              <span
+                onClick={() => setShowPassword(!showPassword)} // Toggle the show password state
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 cursor-pointer"
+              >
+                {showPassword ? <FaEye/> : <FaEyeSlash />} {/* Show different icons based on the state */}
+              </span>
+            </div>
           </div>
+          
           <button
             type="submit"
             className="w-full bg-red-600 text-white py-2 px-4 rounded hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50 disabled:opacity-50"

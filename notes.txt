@@ -1,0 +1,11 @@
+**front**
+Add show passowrd icon (password, confirm password) | done✔️
+
+As a user, the app should redirect me to my profile page as a reminder to update personal info:
+- phone number
+- skills
+- cv
+etc.. | done✔️
+
+- fix "failed to load profile data" issue: fullName and email inputs should be filled automatically, and replace 
+it with a message to indicate info update is required (ex: please fill out the rest of your user info) | done✔️
