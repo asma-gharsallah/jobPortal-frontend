@@ -26,7 +26,8 @@ const JobDetail = () => {
 
   const fetchJobDetails = async () => {
     try {
-      const response = await axios.get(`/api/jobs/${id}`);
+      const response = await axios.get(`/api/jobs/${id}`); // Utilisation correcte de l'ID
+
       setJob(response.data);
     } catch (err) {
       setError("Failed to fetch job details");
@@ -100,7 +101,9 @@ const JobDetail = () => {
               <span>•</span>
               <span>{job.location}</span>
               <span>•</span>
-              <span>${job.salary.toLocaleString()} / year</span>
+              <span>
+                ${job.salary ? job.salary.toLocaleString() : "N/A"} / year
+              </span>{" "}
             </div>
           </div>
 
@@ -153,27 +156,33 @@ const JobDetail = () => {
               </h2>
               <form onSubmit={handleApply} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Select Resume
-                  </label>
-                  <select
-                    value={applicationData.resumeId}
-                    onChange={(e) =>
-                      setApplicationData({
-                        ...applicationData,
-                        resumeId: e.target.value,
-                      })
-                    }
-                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-red-500"
-                    required
-                  >
-                    <option value="">Select a resume</option>
-                    {userResumes.map((resume) => (
-                      <option key={resume.id} value={resume.id}>
-                        {resume.name}
-                      </option>
-                    ))}
-                  </select>
+                  {userResumes.length === 0 ? (
+                    <p className="text-gray-500">No resumes available.</p>
+                  ) : (
+                    <>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Select Resume
+                      </label>
+                      <select
+                        value={applicationData.resumeId}
+                        onChange={(e) =>
+                          setApplicationData({
+                            ...applicationData,
+                            resumeId: e.target.value,
+                          })
+                        }
+                        className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-red-500"
+                        required
+                      >
+                        <option value="">Select a resume</option>
+                        {userResumes.map((resume) => (
+                          <option key={resume.id} value={resume.id}>
+                            {resume.name}
+                          </option>
+                        ))}
+                      </select>
+                    </>
+                  )}
                 </div>
 
                 <div>

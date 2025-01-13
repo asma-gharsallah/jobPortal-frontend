@@ -1,20 +1,23 @@
-import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import axios from 'axios';
+import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
+import axios from "axios";
+import { useAuth } from "../../contexts/AuthContext";
 
 const JobList = () => {
+  const { currentUser } = useAuth();
+
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
+
   const [filters, setFilters] = useState({
-    category: '',
-    location: '',
-    minSalary: '',
-    maxSalary: ''
+    category: "",
+    location: "",
   });
+
   const [pagination, setPagination] = useState({
     currentPage: 1,
-    totalPages: 1
+    totalPages: 1,
   });
 
   useEffect(() => {
@@ -22,20 +25,24 @@ const JobList = () => {
   }, [filters, pagination.currentPage]);
 
   const fetchJobs = async () => {
+    setLoading(true);
+    setError("");
     try {
       const queryParams = new URLSearchParams({
         page: pagination.currentPage,
-        ...Object.fromEntries(Object.entries(filters).filter(([_, v]) => v))
+        ...Object.fromEntries(Object.entries(filters).filter(([_, v]) => v)),
       });
 
       const response = await axios.get(`/api/jobs?${queryParams.toString()}`);
       setJobs(response.data.jobs);
+      console.log(response.data.jobs);
+
       setPagination({
         currentPage: response.data.currentPage,
-        totalPages: response.data.totalPages
+        totalPages: response.data.totalPages,
       });
     } catch (err) {
-      setError('Failed to fetch jobs');
+      setError("Failed to fetch jobs");
     } finally {
       setLoading(false);
     }
@@ -44,7 +51,7 @@ const JobList = () => {
   const handleFilterChange = (e) => {
     setFilters({
       ...filters,
-      [e.target.name]: e.target.value
+      [e.target.name]: e.target.value,
     });
     setPagination({ ...pagination, currentPage: 1 }); // Reset to first page on filter change
   };
@@ -60,30 +67,30 @@ const JobList = () => {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       {/* Filters */}
-      <div className="bg-white p-6 rounded-lg shadow-md mb-6">
-        <h3 className="text-lg font-semibold text-gray-800 mb-4">Filters</h3>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+      <div className="bg-white p-6 rounded-lg shadow-md mb-6 w-full max-w-2xl mx-auto">
+        <h3 className="text-xl font-semibold text-gray-800 mb-4">Filters</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mx-auto">
+          <div className="w-full">
+            <label className="block text-md font-medium text-gray-700 mb-2">
               Category
             </label>
             <select
               name="category"
               value={filters.category}
               onChange={handleFilterChange}
-              className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-red-500"
+              className="w-full border border-gray-300 rounded-lg px-5 py-3 text-lg focus:outline-none focus:ring-2 focus:ring-red-500"
             >
               <option value="">All Categories</option>
-              <option value="software">Software Development</option>
-              <option value="design">Design</option>
-              <option value="marketing">Marketing</option>
-              <option value="sales">Sales</option>
-              <option value="other">Other</option>
+              <option value="Software Development">Software Development</option>
+              <option value="Design">Design</option>
+              <option value="Marketing">Marketing</option>
+              <option value="Sales">Sales</option>
+              <option value="Other">Other</option>
             </select>
           </div>
-          
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+
+          <div className="w-full">
+            <label className="block text-md font-medium text-gray-700 mb-2">
               Location
             </label>
             <input
@@ -92,90 +99,102 @@ const JobList = () => {
               value={filters.location}
               onChange={handleFilterChange}
               placeholder="Any location"
-              className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-red-500"
-            />
-          </div>
-          
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Min Salary
-            </label>
-            <input
-              type="number"
-              name="minSalary"
-              value={filters.minSalary}
-              onChange={handleFilterChange}
-              placeholder="Min salary"
-              className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-red-500"
-            />
-          </div>
-          
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Max Salary
-            </label>
-            <input
-              type="number"
-              name="maxSalary"
-              value={filters.maxSalary}
-              onChange={handleFilterChange}
-              placeholder="Max salary"
-              className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-red-500"
+              className="w-full border border-gray-300 rounded-lg px-4 py-3 text-lg focus:outline-none focus:ring-2 focus:ring-red-500"
             />
           </div>
         </div>
       </div>
 
-      {/* Job List */}
-      {error && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-          {error}
+      {/* Add Job Button */}
+      {currentUser?.role === "admin" && (
+        <div className="flex justify-center items-center mb-6">
+          <Link to="/jobs/AddJob">
+            <button className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 text-sm font-medium">
+              Add Job
+            </button>
+          </Link>
         </div>
       )}
 
-      <div className="grid grid-cols-1 gap-6">
-        {jobs.map(job => (
-          <div key={job.id} className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200">
-            <div className="p-6">
-              <div className="flex justify-between items-start">
-                <div>
-                  <h3 className="text-xl font-semibold text-gray-800 mb-2">
-                    <Link to={`/jobs/${job.id}`} className="hover:text-red-600">
-                      {job.title}
-                    </Link>
+      {/* Job List */}
+      <div className="py-8">
+        <h2 className="text-4xl font-bold text-gray-700 mb-4 text-center">
+          Our<span className="text-red-500"> Job List</span>
+        </h2>
+        {error && (
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+            {error}
+          </div>
+        )}
+
+        {jobs.length > 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {jobs.map((job) => (
+              <div
+                key={job._id}
+                className="bg-white rounded-lg shadow-md hover:shadow-gray-400 transition-shadow duration-200 "
+              >
+                <div className="p-6">
+                  <h3 className="text-xl font-semibold text-gray-800 mb-2 hover:text-red-500">
+                    <Link to={`/jobs/${job._id}`}>{job.title}</Link>
                   </h3>
+                  {/*<p className="text-gray-600 mb-2">{job.category}</p>*/}
+
                   <p className="text-gray-600 mb-2">{job.company}</p>
+
                   <div className="flex items-center text-sm text-gray-500 space-x-4">
-                    <span>{job.location}</span>
+                    <span>{job.location || "N/A"}</span>
                     <span>•</span>
-                    <span>${job.salary.toLocaleString()} / year</span>
+                    <span>
+                      ${job.salary ? job.salary.toLocaleString() : "N/A"} / year
+                    </span>
                     <span>•</span>
-                    <span>{job.type}</span>
+                    <span>{job.type || "N/A"}</span>
+                  </div>
+                  <div className="mt-4">
+                    <p className="text-gray-600 line-clamp-2">
+                      {job.description}
+                    </p>
+                  </div>
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    {job.skills?.map((skill, index) => (
+                      <span
+                        key={index}
+                        className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm"
+                      >
+                        {skill}
+                      </span>
+                    ))}
+                  </div>
+
+                  <div class="flex justify-center space-x-4">
+                    {/*job details */}
+                    <div className="mt-6 flex justify-center items-center">
+                      <Link to={`/jobs/${job._id}`}>
+                        <button className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 text-sm font-medium">
+                          Learn More
+                        </button>
+                      </Link>
+                    </div>
+
+                    {/* Update Button (visible only for admin users) */}
+                    {currentUser?.role === "admin" && (
+                      <div className="mt-6 flex justify-center items-center">
+                        <Link to={`/jobs/UpdateJob/${job._id}`}>
+                          <button className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 text-sm font-medium">
+                            Update
+                          </button>
+                        </Link>
+                      </div>
+                    )}
                   </div>
                 </div>
-                <Link
-                  to={`/jobs/${job.id}`}
-                  className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition-colors duration-200"
-                >
-                  View Details
-                </Link>
               </div>
-              <div className="mt-4">
-                <p className="text-gray-600 line-clamp-2">{job.description}</p>
-              </div>
-              <div className="mt-4 flex flex-wrap gap-2">
-                {job.skills.map((skill, index) => (
-                  <span
-                    key={index}
-                    className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm"
-                  >
-                    {skill}
-                  </span>
-                ))}
-              </div>
-            </div>
+            ))}
           </div>
-        ))}
+        ) : (
+          <p className="text-center text-gray-600">No jobs found.</p>
+        )}
       </div>
 
       {/* Pagination */}
@@ -183,7 +202,12 @@ const JobList = () => {
         <div className="mt-8 flex justify-center">
           <nav className="flex items-center space-x-2">
             <button
-              onClick={() => setPagination({ ...pagination, currentPage: pagination.currentPage - 1 })}
+              onClick={() =>
+                setPagination((prev) => ({
+                  ...prev,
+                  currentPage: prev.currentPage - 1,
+                }))
+              }
               disabled={pagination.currentPage === 1}
               className="px-3 py-2 rounded-md bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
             >
@@ -192,18 +216,28 @@ const JobList = () => {
             {[...Array(pagination.totalPages)].map((_, index) => (
               <button
                 key={index + 1}
-                onClick={() => setPagination({ ...pagination, currentPage: index + 1 })}
+                onClick={() =>
+                  setPagination((prev) => ({
+                    ...prev,
+                    currentPage: index + 1,
+                  }))
+                }
                 className={`px-3 py-2 rounded-md ${
                   pagination.currentPage === index + 1
-                    ? 'bg-red-600 text-white'
-                    : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
+                    ? "bg-red-600 text-white"
+                    : "bg-white border border-gray-300 text-gray-700 hover:bg-gray-50"
                 }`}
               >
                 {index + 1}
               </button>
             ))}
             <button
-              onClick={() => setPagination({ ...pagination, currentPage: pagination.currentPage + 1 })}
+              onClick={() =>
+                setPagination((prev) => ({
+                  ...prev,
+                  currentPage: prev.currentPage + 1,
+                }))
+              }
               disabled={pagination.currentPage === pagination.totalPages}
               className="px-3 py-2 rounded-md bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
             >
