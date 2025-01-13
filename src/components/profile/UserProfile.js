@@ -5,16 +5,7 @@ import { useAuth } from "../../contexts/AuthContext";
 
 const UserProfile = () => {
   const { currentUser } = useAuth();
-  const [profileData, setProfileData] = useState({
-    name: "",
-    email: "",
-    phone: "",
-    location: "",
-    skills: [],
-    education: [],
-    experience: [],
-    applications: [],
-  });
+  const [profileData, setProfileData] = useState({});
   const [resume, setResume] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -41,12 +32,13 @@ const UserProfile = () => {
         const response = await axios.get("/api/auth/me", {
           headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
         });
-        setProfileData(response.data);
+        const {applications,...restOfData} = response.data;
+        setProfileData(restOfData);
+        console.log("profileData", profileData);
       } catch (err) {
         setError("Failed to load profile data");
       }
     };
-
     fetchProfile();
   }, []);
 
@@ -96,12 +88,13 @@ const UserProfile = () => {
 
       // Append form fields to FormData
       Object.keys(profileData).forEach((key) => {
-        if (typeof profileData[key] === "object") {
+        const value = profileData[key];
+        if (Array.isArray(value) || typeof value === "object") {
           // Convert objects/arrays to JSON strings
-          formData.append(key, JSON.stringify(profileData[key] || []));
+          formData.append(key, JSON.stringify(value || []));
         } else {
           // Avoid sending empty strings
-          formData.append(key, profileData[key] || "");
+          formData.append(key, value || "");
         }
       });
 
