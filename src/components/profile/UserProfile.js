@@ -5,13 +5,17 @@ import { useAuth } from "../../contexts/AuthContext";
 
 const UserProfile = () => {
   const { currentUser } = useAuth();
+  console.log(currentUser);
+
   const [profileData, setProfileData] = useState({});
-  const [resume, setResume] = useState(null);
+  const [resume, setResume] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
   const onDrop = (acceptedFiles) => {
+    console.log("accepted files on drop", acceptedFiles);
+
     setResume(acceptedFiles[0]);
   };
 
@@ -32,7 +36,7 @@ const UserProfile = () => {
         const response = await axios.get("/api/auth/me", {
           headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
         });
-        const {applications,...restOfData} = response.data;
+        const { applications, __v, ...restOfData } = response.data;
         setProfileData(restOfData);
         console.log("profileData", profileData);
       } catch (err) {
@@ -85,38 +89,45 @@ const UserProfile = () => {
     // }
     try {
       const formData = new FormData();
+      console.log("profile data", profileData);
 
       // Append form fields to FormData
       Object.keys(profileData).forEach((key) => {
         const value = profileData[key];
-        if (Array.isArray(value) || typeof value === "object") {
-          // Convert objects/arrays to JSON strings
-          formData.append(key, JSON.stringify(value || []));
-        } else {
-          // Avoid sending empty strings
-          formData.append(key, value || "");
+        if (key !== "resumes") {
+          if (Array.isArray(value) || typeof value === "object") {
+            // Convert objects/arrays to JSON strings
+            formData.append(key, JSON.stringify(value || []));
+          } else {
+            // Avoid sending empty strings
+            formData.append(key, value || "");
+          }
         }
       });
 
       // Append resume file if available
       if (resume) {
-        formData.append("resume", resume);
+        formData.append("resumes", resume);
       }
 
       // Debugging: Log FormData entries
       for (let [key, value] of formData.entries()) {
-        console.log(`${key}: ${value}`);
+        console.log(`${key}: ${JSON.stringify(value)}`);
       }
 
       const response = await axios.put("/api/auth/profile", formData, {
         headers: {
+          "Content-Type": "multipart/form-data",
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
       });
+      const { applications, __v, ...restOfData } = response.data.user;
 
-      setProfileData(response.data.user || response.data);
+      setProfileData(restOfData);
       setSuccess("Profile updated successfully");
     } catch (err) {
+      console.log(err.response.data);
+
       setError(err.response?.data?.message || "Failed to update profile");
     } finally {
       setLoading(false);
@@ -176,91 +187,6 @@ const UserProfile = () => {
               value={profileData.email}
               onChange={handleChange}
               required
-            />
-          </div>
-
-          <div>
-            <label
-              className="block text-gray-700 text-sm font-bold mb-2"
-              htmlFor="phone"
-            >
-              Phone Number
-            </label>
-            <input
-              type="tel"
-              id="phone"
-              name="phone"
-              className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-red-500"
-              value={profileData.phone}
-              onChange={handleChange}
-            />
-          </div>
-
-          <div>
-            <label
-              className="block text-gray-700 text-sm font-bold mb-2"
-              htmlFor="location"
-            >
-              Location
-            </label>
-            <input
-              type="text"
-              id="location"
-              name="location"
-              className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-red-500"
-              value={profileData.location}
-              onChange={handleChange}
-            />
-          </div>
-
-          <div>
-            <label
-              className="block text-gray-700 text-sm font-bold mb-2"
-              htmlFor="skills"
-            >
-              Skills (comma-separated)
-            </label>
-            <textarea
-              id="skills"
-              name="skills"
-              className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-red-500"
-              value={profileData.skills}
-              onChange={handleChange}
-              rows="3"
-            />
-          </div>
-
-          <div>
-            <label
-              className="block text-gray-700 text-sm font-bold mb-2"
-              htmlFor="education"
-            >
-              Education
-            </label>
-            <textarea
-              id="education"
-              name="education"
-              className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-red-500"
-              value={profileData.education}
-              onChange={handleChange}
-              rows="3"
-            />
-          </div>
-
-          <div>
-            <label
-              className="block text-gray-700 text-sm font-bold mb-2"
-              htmlFor="experience"
-            >
-              Work Experience
-            </label>
-            <textarea
-              id="experience"
-              name="experience"
-              className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-red-500"
-              value={profileData.experience}
-              onChange={handleChange}
-              rows="4"
             />
           </div>
 

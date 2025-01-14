@@ -7,7 +7,6 @@ const Register = () => {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
-    phone: "",
     password: "",
     passwordConfirm: "",
   });
@@ -38,7 +37,6 @@ const Register = () => {
       await register({
         name: formData.name,
         email: formData.email,
-        phone: formData.phone,
         password: formData.password,
       });
       navigate("/profile");
@@ -87,23 +85,6 @@ const Register = () => {
               id="email"
               className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-red-500"
               value={formData.email}
-              onChange={handleChange}
-              required
-            />
-          </div>
-
-          <div className="mb-4">
-            <label
-              className="block text-gray-700 text-sm font-bold mb-2"
-              htmlFor="phone"
-            >
-              Phone
-            </label>
-            <input
-              type="text"
-              id="phone"
-              className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-red-500"
-              value={formData.phone}
               onChange={handleChange}
               required
             />

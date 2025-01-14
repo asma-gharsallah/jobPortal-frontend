@@ -5,6 +5,7 @@ import { useAuth } from "../../contexts/AuthContext";
 
 const JobList = () => {
   const { currentUser } = useAuth();
+  console.log(currentUser);
 
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -33,6 +34,11 @@ const JobList = () => {
         ...Object.fromEntries(Object.entries(filters).filter(([_, v]) => v)),
       });
 
+      // Ajoutez un filtre pour les utilisateurs non-admin
+      if (currentUser?.role !== "admin") {
+        queryParams.append("status", "active");
+      }
+
       const response = await axios.get(`/api/jobs?${queryParams.toString()}`);
       setJobs(response.data.jobs);
       console.log(response.data.jobs);
@@ -54,6 +60,34 @@ const JobList = () => {
       [e.target.name]: e.target.value,
     });
     setPagination({ ...pagination, currentPage: 1 }); // Reset to first page on filter change
+  };
+
+  const deleteJob = async (jobId) => {
+    try {
+      // Vérification si l'utilisateur est authentifié et dispose d'un token
+      if (!localStorage.getItem("token")) {
+        throw new Error(
+          "Authentication token is missing. Please log in again."
+        );
+      }
+
+      // Appel API pour supprimer le job en incluant l'ID du job
+      await axios.delete(`/api/jobs/${jobId}`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }, // Ajout du token pour l'autorisation
+      });
+
+      // Mettre à jour la liste des jobs localement après suppression
+      setJobs((prevJobs) => prevJobs.filter((job) => job._id !== jobId));
+      alert("Job deleted successfully.");
+    } catch (error) {
+      console.error("Failed to delete job:", error);
+
+      // Gestion des erreurs et message d'alerte
+      const errorMessage =
+        error.response?.data?.message ||
+        "Failed to delete job. Please try again.";
+      alert(errorMessage);
+    }
   };
 
   if (loading) {
@@ -82,10 +116,14 @@ const JobList = () => {
             >
               <option value="">All Categories</option>
               <option value="Software Development">Software Development</option>
-              <option value="Design">Design</option>
-              <option value="Marketing">Marketing</option>
-              <option value="Sales">Sales</option>
-              <option value="Other">Other</option>
+              <option value="design">Design</option>
+              <option value="marketing">Marketing</option>
+              <option value="sales">Sales</option>
+              <option value="customer Service">Customer Service</option>
+              <option value="data Science">Data Science</option>
+              <option value="project Management">Project Management</option>
+              <option value="human resources">Human Resources</option>
+              <option value="other">Other</option>
             </select>
           </div>
 
@@ -129,68 +167,101 @@ const JobList = () => {
 
         {jobs.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {jobs.map((job) => (
-              <div
-                key={job._id}
-                className="bg-white rounded-lg shadow-md hover:shadow-gray-400 transition-shadow duration-200 "
-              >
-                <div className="p-6">
-                  <h3 className="text-xl font-semibold text-gray-800 mb-2 hover:text-red-500">
-                    <Link to={`/jobs/${job._id}`}>{job.title}</Link>
-                  </h3>
-                  {/*<p className="text-gray-600 mb-2">{job.category}</p>*/}
+            {jobs
+              .filter(
+                (job) =>
+                  currentUser?.role === "admin" || job.status === "active"
+              )
+              .map((job) => (
+                <div
+                  key={job._id}
+                  className="bg-white rounded-lg shadow-md hover:shadow-gray-400 transition-shadow duration-200 "
+                >
+                  <div className="p-6">
+                    <h3 className="text-xl font-semibold text-gray-800 mb-2 hover:text-red-500">
+                      <Link to={`/jobs/${job._id}`}>{job.title}</Link>
+                    </h3>
+                    {/*<p className="text-gray-600 mb-2">{job.category}</p>*/}
 
-                  <p className="text-gray-600 mb-2">{job.company}</p>
+                    <p className="text-gray-600 mb-2">{job.company}</p>
 
-                  <div className="flex items-center text-sm text-gray-500 space-x-4">
-                    <span>{job.location || "N/A"}</span>
-                    <span>•</span>
-                    <span>
-                      ${job.salary ? job.salary.toLocaleString() : "N/A"} / year
-                    </span>
-                    <span>•</span>
-                    <span>{job.type || "N/A"}</span>
-                  </div>
-                  <div className="mt-4">
-                    <p className="text-gray-600 line-clamp-2">
-                      {job.description}
-                    </p>
-                  </div>
-                  <div className="mt-4 flex flex-wrap gap-2">
-                    {job.skills?.map((skill, index) => (
-                      <span
-                        key={index}
-                        className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm"
-                      >
-                        {skill}
+                    <div className="flex items-center text-sm text-gray-500 space-x-4">
+                      <span>{job.location || "N/A"}</span>
+                      <span>•</span>
+                      <span>
+                        ${job.salary ? job.salary.toLocaleString() : "N/A"} /
+                        year
                       </span>
-                    ))}
-                  </div>
-
-                  <div class="flex justify-center space-x-4">
-                    {/*job details */}
-                    <div className="mt-6 flex justify-center items-center">
-                      <Link to={`/jobs/${job._id}`}>
-                        <button className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 text-sm font-medium">
-                          Learn More
-                        </button>
-                      </Link>
+                      <span>•</span>
+                      <span>{job.type || "N/A"}</span>
+                    </div>
+                    <div className="mt-4">
+                      <p className="text-gray-600 line-clamp-2">
+                        {job.description}
+                      </p>
+                    </div>
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      {job.skills?.map((skill, index) => (
+                        <span
+                          key={index}
+                          className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm"
+                        >
+                          {skill}
+                        </span>
+                      ))}
                     </div>
 
-                    {/* Update Button (visible only for admin users) */}
-                    {currentUser?.role === "admin" && (
+                    <div class="flex justify-center space-x-4">
+                      {/*job details */}
                       <div className="mt-6 flex justify-center items-center">
-                        <Link to={`/jobs/UpdateJob/${job._id}`}>
+                        <Link to={`/jobs/${job._id}`}>
                           <button className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 text-sm font-medium">
-                            Update
+                            Learn More
                           </button>
                         </Link>
                       </div>
-                    )}
+
+                      {currentUser?.role === "admin" && (
+                        <>
+                          {/* Update Button (visible only for admin users) */}
+                          <div className="mt-6 flex justify-center items-center">
+                            <Link to={`/jobs/UpdateJob/${job._id}`}>
+                              <button className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 text-sm font-medium">
+                                Update
+                              </button>
+                            </Link>
+                          </div>
+                          {/* Bouton Delete (visible uniquement pour l'admin) */}
+                          <div className="mt-6 flex justify-center items-center">
+                            <button
+                              onClick={() => {
+                                if (
+                                  window.confirm(
+                                    "Are you sure you want to delete this job?"
+                                  )
+                                ) {
+                                  deleteJob(job._id);
+                                }
+                              }}
+                              className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 text-sm font-medium"
+                            >
+                              Delete
+                            </button>
+                          </div>
+                        </>
+                      )}
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            {/* Message for no jobs */}
+            {jobs.filter(
+              (job) => currentUser?.role === "admin" || job.status === "active"
+            ).length === 0 && (
+              <p className="col-span-full flex justify-center items-center text-gray-600 text-center text-lg">
+                No jobs available at the moment.
+              </p>
+            )}
           </div>
         ) : (
           <p className="text-center text-gray-600">No jobs found.</p>
