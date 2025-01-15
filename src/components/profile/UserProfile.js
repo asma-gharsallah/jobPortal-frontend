@@ -2,13 +2,28 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useDropzone } from "react-dropzone";
 import { useAuth } from "../../contexts/AuthContext";
+import { Viewer } from "@react-pdf-viewer/core"; // Import Viewer for displaying PDFs
+import "@react-pdf-viewer/core/lib/styles/index.css";
+// import "@react-pdf-viewer/default-layout/lib/styles/index.css";
+import { Document } from "react-pdf";
+import * as pdfjs from "pdfjs-dist/";
+// pdfjs.GlobalWorkerOptions.workerSrc = new URL(
+//   "pdfjs-dist/build/pdf.worker.min.mjs",
+//   import.meta.url
+// ).toString();
+// pdfjs.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
 
 const UserProfile = () => {
   const { currentUser } = useAuth();
   console.log(currentUser);
 
+  useEffect(() => {
+    pdfjs.GlobalWorkerOptions.workerSrc = require("pdfjs-dist/build/pdf.worker.min.js");
+    console.log(pdfjs);
+  }, []);
+
   const [profileData, setProfileData] = useState({});
-  const [resume, setResume] = useState([]);
+  const [resume, setResume] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -59,34 +74,6 @@ const UserProfile = () => {
     setError("");
     setSuccess("");
 
-    // try {
-    //   const formData = new FormData();
-    //   Object.keys(profileData).forEach((key) => {
-    //     formData.append(key, profileData[key]);
-    //   });
-    //   console.log("formdata", formData);
-
-    //   if (resume) {
-    //     formData.append("resume", resume);
-    //   }
-    //   for (let [key, value] of formData.entries()) {
-    //     console.log(`${key}: ${value}`);
-    //   }
-    //   const response = await axios.put("/api/auth/profile", formData, {
-    //     headers: {
-    //       Authorization: `Bearer ${localStorage.getItem("token")}`,
-    //     },
-    //   });
-    //   console.log("update response", response);
-    //   console.log("update formData", formData);
-
-    //   setProfileData(response.data.user || response.data);
-    //   setSuccess("Profile updated successfully");
-    // } catch (err) {
-    //   setError(err.response?.data?.message || "Failed to update profile");
-    // } finally {
-    //   setLoading(false);
-    // }
     try {
       const formData = new FormData();
       console.log("profile data", profileData);
@@ -110,10 +97,12 @@ const UserProfile = () => {
         formData.append("resumes", resume);
       }
 
+      //?????????
       // Debugging: Log FormData entries
       for (let [key, value] of formData.entries()) {
         console.log(`${key}: ${JSON.stringify(value)}`);
       }
+      //?????????
 
       const response = await axios.put("/api/auth/profile", formData, {
         headers: {
@@ -217,6 +206,78 @@ const UserProfile = () => {
             </div>
           </div>
 
+          {/*show resumes*/}
+          <div>
+            <label className="block text-gray-700 font-bold mb-2">
+              Uploaded Resumes
+            </label>
+            {profileData.resumes && profileData.resumes.length > 0 ? (
+              <ul className="list-disc pl-5">
+                {profileData.resumes.map((resume, index) => (
+                  <li key={index}>
+                    {/* <a
+                      href={`http://localhost:5001/${resume.path}`} // Ajouter l'URL de base
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-red-600 hover:underline"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        const newTab = window.open();
+                        newTab.document.write(
+                          `<iframe width="100%" height="100%" data="${e.target.href}" type="application/pdf"></iframe>`
+                        );
+                      }}
+                    >
+                      {resume.name}
+                    </a> */}
+                    <Document file={resume.path} />
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-gray-500">No resumes uploaded yet.</p>
+            )}
+          </div>
+
+          {/**/}
+
+          {/* Uploaded Resumes */}
+          {/* <div>
+            <label className="block text-gray-700 font-bold mb-2">
+              Uploaded Resumes
+            </label>
+            {profileData.resumes && profileData.resumes.length > 0 ? (
+              <ul className="list-disc pl-5">
+                {profileData.resumes.map((resume, index) => (
+                  <li key={index}>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setSelectedResume(
+                          `http://localhost:5001/${resume.path}`
+                        )
+                      }
+                      className="text-red-600 hover:underline"
+                    >
+                      {resume.name}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-gray-500">No resumes uploaded yet.</p>
+            )}
+          </div> */}
+
+          {/* PDF Viewer */}
+          {/* {profileData?.resumes.length > 0 && (
+            <div className="mt-6">
+              <h3 className="text-xl font-bold mb-4">Resume Viewer</h3>
+              <div style={{ height: "500px", border: "1px solid #ddd" }}>
+                <Viewer fileUrl={profileData?.resumes[0].path} />
+              </div>
+            </div>
+          )} */}
           <button
             type="submit"
             className="w-full bg-red-600 text-white py-2 px-4 rounded hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50 disabled:opacity-50"
