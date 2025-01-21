@@ -7,7 +7,7 @@ const JobDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { currentUser } = useAuth();
-  const [job, setJob] = useState(null);
+  const [job, setJob] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [applying, setApplying] = useState(false);
@@ -26,8 +26,7 @@ const JobDetail = () => {
 
   const fetchJobDetails = async () => {
     try {
-      const response = await axios.get(`/api/jobs/${id}`); // Utilisation correcte de l'ID
-
+      const response = await axios.get(`/api/jobs/${id}`);
       setJob(response.data);
     } catch (err) {
       setError("Failed to fetch job details");
@@ -38,10 +37,12 @@ const JobDetail = () => {
 
   const fetchUserResumes = async () => {
     try {
-      const response = await axios.get("/api/user/resumes", {
+      const response = await axios.get("/api/auth/me", {
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
       });
-      setUserResumes(response.data);
+
+      // Assuming response.data contains an array of resumes, update state accordingly.
+      setUserResumes(response.data.resumes || []); // Make sure the resumes data exists
     } catch (err) {
       console.error("Failed to fetch user resumes:", err);
     }
@@ -49,10 +50,13 @@ const JobDetail = () => {
 
   const handleApply = async (e) => {
     e.preventDefault();
+
     if (!currentUser) {
       navigate("/login", { state: { from: `/jobs/${id}` } });
       return;
     }
+
+    console.log("Application data:", applicationData); // Log to check data
 
     setApplying(true);
     try {
@@ -149,87 +153,102 @@ const JobDetail = () => {
           </div>
 
           {/* Application Form */}
-          {currentUser ? (
-            <div className="py-6 border-t border-gray-200">
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">
-                Apply for this Position
-              </h2>
-              <form onSubmit={handleApply} className="space-y-4">
-                <div>
+          {currentUser?.role === "user" && (
+            <div>
+              {currentUser ? (
+                <div className="py-6 border-t border-gray-200">
+                  <h2 className="text-xl font-semibold text-gray-900 mb-4">
+                    Apply for this Position
+                  </h2>
+                  {/* Vérification si l'utilisateur a un CV */}
                   {userResumes.length === 0 ? (
-                    <p className="text-gray-500">No resumes available.</p>
-                  ) : (
-                    <>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Select Resume
-                      </label>
-                      <select
-                        value={applicationData.resumeId}
-                        onChange={(e) =>
-                          setApplicationData({
-                            ...applicationData,
-                            resumeId: e.target.value,
+                    // Si l'utilisateur n'a pas de CV
+                    <div className="text-center">
+                      <p className="text-gray-500 mb-4">
+                        No resumes available.
+                      </p>
+                      <p className="text-red-600 mb-4">
+                        Please add a resume to your profile to apply for this
+                        position.
+                      </p>
+                      <button
+                        onClick={() =>
+                          navigate("/profile", {
+                            state: { from: `/jobs/${id}` },
                           })
                         }
-                        className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-red-500"
-                        required
+                        className="bg-red-600 text-white px-6 py-2 rounded hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50"
                       >
-                        <option value="">Select a resume</option>
-                        {userResumes.map((resume) => (
-                          <option key={resume.id} value={resume.id}>
-                            {resume.name}
-                          </option>
-                        ))}
-                      </select>
-                    </>
+                        Go to Profile to Add Resume
+                      </button>
+                    </div>
+                  ) : (
+                    <form onSubmit={handleApply} className="space-y-4">
+                      <div>
+                        {userResumes.length === 0 ? (
+                          <p className="text-gray-500">No resumes available.</p>
+                        ) : (
+                          <div className="text-gray-700">
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                              Your Resume
+                            </label>
+                            <p>{userResumes[0].name}</p>
+                          </div>
+                        )}
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Cover Letter / Additional Message
+                        </label>
+                        <textarea
+                          value={applicationData.coverLetter}
+                          onChange={(e) =>
+                            setApplicationData({
+                              ...applicationData,
+                              coverLetter: e.target.value,
+                            })
+                          }
+                          rows="4"
+                          className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-red-500"
+                          placeholder="Tell us why you're a great fit for this position..."
+                          required
+                        ></textarea>
+                      </div>
+
+                      {currentUser?.role === "user" && (
+                        <div className="flex items-center justify-end">
+                          <button
+                            type="submit"
+                            disabled={applying || userResumes.length === 0}
+                            className="bg-red-600 text-white px-6 py-2 rounded hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50 disabled:opacity-50"
+                          >
+                            {applying ? "Submitting..." : "Submit Application"}
+                          </button>
+                        </div>
+                      )}
+                    </form>
                   )}
                 </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Cover Letter / Additional Message
-                  </label>
-                  <textarea
-                    value={applicationData.message}
-                    onChange={(e) =>
-                      setApplicationData({
-                        ...applicationData,
-                        message: e.target.value,
-                      })
-                    }
-                    rows="4"
-                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-red-500"
-                    placeholder="Tell us why you're a great fit for this position..."
-                    required
-                  ></textarea>
+              ) : (
+                <div className="py-6 border-t border-gray-200">
+                  <div className="text-center">
+                    <p className="text-gray-600 mb-4">
+                      Please log in to apply for this position.
+                    </p>
+                    <button
+                      onClick={() =>
+                        navigate("/login", {
+                          state: { from: `/jobs/${id}` },
+                        })
+                      }
+                      className="bg-red-600 text-white px-6 py-2 rounded hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50"
+                    >
+                      Log In to Apply
+                    </button>
+                  </div>
                 </div>
-
-                <div className="flex items-center justify-end">
-                  <button
-                    type="submit"
-                    disabled={applying}
-                    className="bg-red-600 text-white px-6 py-2 rounded hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50 disabled:opacity-50"
-                  >
-                    {applying ? "Submitting..." : "Submit Application"}
-                  </button>
-                </div>
-              </form>
-            </div>
-          ) : (
-            <div className="py-6 border-t border-gray-200">
-              <div className="text-center">
-                <p className="text-gray-600 mb-4">
-                  Please log in to apply for this position.
-                </p>
-                <button
-                  onClick={() =>
-                    navigate("/login", { state: { from: `/jobs/${id}` } })
-                  }
-                  className="bg-red-600 text-white px-6 py-2 rounded hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50"
-                >
-                  Log In to Apply
-                </button>
-              </div>
+              )}
             </div>
           )}
         </div>

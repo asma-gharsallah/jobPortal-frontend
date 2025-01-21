@@ -6,6 +6,7 @@ import Home from "./components/pages/Home";
 import Login from "./components/auth/Login";
 import Register from "./components/auth/Register";
 import Dashboard from "./components/dashboard/Dashboard";
+import DashboardAdmin from "./components/dashboard/DashboardAdmin";
 import JobList from "./components/jobs/JobList";
 import JobDetail from "./components/jobs/JobDetail";
 import UserProfile from "./components/profile/UserProfile";
@@ -13,6 +14,7 @@ import PrivateRoute from "./components/auth/PrivateRoute";
 import "./App.css";
 import AddJob from "./components/jobs/AddJob";
 import UpdateJob from "./components/jobs/UpdateJob";
+import ApplicationDetails from "./components/dashboard/ApplicationDetails";
 
 function App() {
   return (
@@ -32,6 +34,26 @@ function App() {
                     <Dashboard />
                   </PrivateRoute>
                 }
+              />
+              <Route
+                path="/dashboardAdmin"
+                element={
+                  <PrivateRoute>
+                    <DashboardAdmin />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/home"
+                element={
+                  <PrivateRoute>
+                    <Home />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/applications/:id"
+                element={<ApplicationDetails />}
               />
 
               <Route path="/jobs" element={<JobList />} />

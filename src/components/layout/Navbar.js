@@ -33,9 +33,17 @@ const Navbar = () => {
               >
                 Browse Jobs
               </Link>
-              {currentUser && (
+              {currentUser?.role === "user" && (
                 <Link
                   to="/dashboard"
+                  className="text-gray-700 hover:text-red-600 px-3 py-2 rounded-md text-sm font-medium"
+                >
+                  Dashboard
+                </Link>
+              )}
+              {currentUser?.role === "admin" && (
+                <Link
+                  to="/dashboardAdmin"
                   className="text-gray-700 hover:text-red-600 px-3 py-2 rounded-md text-sm font-medium"
                 >
                   Dashboard

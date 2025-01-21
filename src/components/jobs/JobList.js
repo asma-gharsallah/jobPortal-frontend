@@ -116,14 +116,14 @@ const JobList = () => {
             >
               <option value="">All Categories</option>
               <option value="Software Development">Software Development</option>
-              <option value="design">Design</option>
-              <option value="marketing">Marketing</option>
-              <option value="sales">Sales</option>
-              <option value="customer Service">Customer Service</option>
-              <option value="data Science">Data Science</option>
-              <option value="project Management">Project Management</option>
-              <option value="human resources">Human Resources</option>
-              <option value="other">Other</option>
+              <option value="Design">Design</option>
+              <option value="Marketing">Marketing</option>
+              <option value="Sales">Sales</option>
+              <option value="Customer Service">Customer Service</option>
+              <option value="Data Science">Data Science</option>
+              <option value="Project Management">Project Management</option>
+              <option value="Human Resources">Human Resources</option>
+              <option value="Other">Other</option>
             </select>
           </div>
 

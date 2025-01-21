@@ -189,33 +189,63 @@ const UserProfile = () => {
               required
             />
           </div>
+          {currentUser?.role === "user" && (
+            <div>
+              <div>
+                <label className="block text-gray-700 text-sm font-bold mb-2">
+                  Resume
+                </label>
+                <div
+                  {...getRootProps()}
+                  className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer ${
+                    isDragActive
+                      ? "border-red-500 bg-red-50"
+                      : "border-gray-300 hover:border-red-500"
+                  }`}
+                >
+                  <input {...getInputProps()} />
+                  {resume ? (
+                    <p className="text-gray-600">
+                      Selected file: {resume.name}
+                    </p>
+                  ) : (
+                    <p className="text-gray-600">
+                      Drag and drop your resume here, or click to select a file
+                      <br />
+                      <span className="text-sm text-gray-500">
+                        (PDF, DOC, DOCX files only)
+                      </span>
+                    </p>
+                  )}
+                </div>
+              </div>
 
-          <div>
-            <label className="block text-gray-700 text-sm font-bold mb-2">
-              Resume
-            </label>
-            <div
-              {...getRootProps()}
-              className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer ${
-                isDragActive
-                  ? "border-red-500 bg-red-50"
-                  : "border-gray-300 hover:border-red-500"
-              }`}
-            >
-              <input {...getInputProps()} />
-              {resume ? (
-                <p className="text-gray-600">Selected file: {resume.name}</p>
-              ) : (
-                <p className="text-gray-600">
-                  Drag and drop your resume here, or click to select a file
-                  <br />
-                  <span className="text-sm text-gray-500">
-                    (PDF, DOC, DOCX files only)
-                  </span>
-                </p>
-              )}
+              {/*show cv */}
+              <div>
+                <label className="block text-gray-700 font-bold mb-2">
+                  Uploaded Resumes
+                </label>
+                {profileData.resumes && profileData.resumes.length > 0 ? (
+                  <ul className="list-disc pl-5">
+                    {profileData.resumes.map((resume, index) => (
+                      <li key={index}>
+                        <a
+                          href={`http://localhost:5001/${resume.path}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-red-600 hover:underline"
+                        >
+                          {resume.name}
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-gray-500">No resumes uploaded yet.</p>
+                )}
+              </div>
             </div>
-          </div>
+          )}
 
           <button
             type="submit"
