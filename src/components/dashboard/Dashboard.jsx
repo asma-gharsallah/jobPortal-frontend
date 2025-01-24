@@ -142,9 +142,6 @@ const Dashboard = () => {
                       Job Title
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Company
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Applied Date
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -163,11 +160,7 @@ const Dashboard = () => {
                           {application.job.title}
                         </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-500">
-                          {application.job.company}
-                        </div>
-                      </td>
+                      
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm text-gray-500">
                           {application?.appliedAt.split("T")[0]}
@@ -179,10 +172,10 @@ const Dashboard = () => {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm">
                         <Link
-                          to={`/jobs/${application.job._id}`}
+                          to={`/application/${application._id}`}
                           className="text-red-600 hover:text-red-900"
                         >
-                          View Job
+                          View Details
                         </Link>
                       </td>
                       <td>

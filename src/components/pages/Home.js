@@ -41,7 +41,7 @@ const Home = () => {
                 id="search"
                 type="text"
                 className="block w-full px-4 py-3 text-base text-gray-900 placeholder-gray-500 border border-transparent rounded-md focus:outline-none focus:ring-2 focus:ring-red-400 focus:border-transparent"
-                placeholder="Job title, keywords, or company"
+                placeholder="Job title, keywords"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />

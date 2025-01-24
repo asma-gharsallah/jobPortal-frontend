@@ -10,7 +10,6 @@ const UpdateJob = () => {
 
   const [job, setJob] = useState({
     title: "",
-    company: "",
     location: "",
     type: "Full-time",
     category: "software development",
@@ -19,7 +18,7 @@ const UpdateJob = () => {
     responsibilities: "",
     skills: [],
     experience: 0,
-    applicationDeadline: "",
+    applicationDeadline: new Date(),
     status: "active",
   });
 
@@ -36,6 +35,9 @@ const UpdateJob = () => {
           requirements: data.requirements.join("\n"),
           responsibilities: data.responsibilities.join("\n"),
           skills: Array.isArray(data.skills) ? data.skills : [], // Ensure skills is an array
+          applicationDeadline: data.applicationDeadline
+            ? new Date(data.applicationDeadline)
+            : new Date(), // Conversion en objet Date
         });
         console.log("fetched job", job);
       } catch (err) {
@@ -118,21 +120,6 @@ const UpdateJob = () => {
             id="title"
             name="title"
             value={job.title}
-            onChange={handleChange}
-            className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-red-500"
-          />
-        </div>
-
-        {/* Company */}
-        <div className="w-full mb-4">
-          <label className="block text-md font-medium text-gray-700 mb-2 ">
-            Company
-          </label>
-          <input
-            type="text"
-            id="company"
-            name="company"
-            value={job.company}
             onChange={handleChange}
             className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-red-500"
           />
@@ -288,8 +275,19 @@ const UpdateJob = () => {
             name="applicationDeadline"
             type="date"
             placeholder="Application Deadline"
-            value={job.applicationDeadline.split("T")[0]}
-            onChange={handleChange}
+            value={
+              job.applicationDeadline
+                ? job.applicationDeadline.toISOString().split("T")[0]
+                : ""
+            }
+            onChange={(e) =>
+              handleChange({
+                target: {
+                  name: "applicationDeadline",
+                  value: new Date(e.target.value),
+                }, // Convertir la chaîne en objet Date
+              })
+            }
             className="w-full border border-gray-300 px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-blue-500"
           />
         </div>

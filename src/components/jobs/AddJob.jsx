@@ -4,7 +4,6 @@ import { useNavigate } from "react-router-dom";
 
 const AddJob = () => {
   const [title, setTitle] = useState("");
-  const [company, setCompany] = useState("");
   const [location, setLocation] = useState("");
   const [type, setType] = useState("Full-time");
   const [category, setCategory] = useState("Software Development");
@@ -26,7 +25,6 @@ const AddJob = () => {
 
     const jobData = {
       title,
-      company,
       location,
       type,
       category,
@@ -79,19 +77,6 @@ const AddJob = () => {
             name="title"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-red-500"
-            required
-          />
-        </div>
-        <div className="w-full mb-4">
-          <label className="block text-md font-medium text-gray-700 mb-2 " >
-            Company
-          </label>
-          <input
-            type="text"
-            name="company"
-            value={company}
-            onChange={(e) => setCompany(e.target.value)}
             className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-red-500"
             required
           />

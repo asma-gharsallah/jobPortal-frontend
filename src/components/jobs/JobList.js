@@ -183,8 +183,6 @@ const JobList = () => {
                     </h3>
                     {/*<p className="text-gray-600 mb-2">{job.category}</p>*/}
 
-                    <p className="text-gray-600 mb-2">{job.company}</p>
-
                     <div className="flex items-center text-sm text-gray-500 space-x-4">
                       <span>{job.location || "N/A"}</span>
                       <span>•</span>
@@ -200,18 +198,52 @@ const JobList = () => {
                         {job.description}
                       </p>
                     </div>
-                    <div className="mt-4 flex flex-wrap gap-2">
-                      {job.skills?.map((skill, index) => (
-                        <span
-                          key={index}
-                          className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm"
-                        >
-                          {skill}
-                        </span>
-                      ))}
+
+                    <div
+                      className="mt-4 flex flex-wrap"
+                      style={{
+                        display: "-webkit-box",
+                        WebkitLineClamp: 2, // Limite l'affichage à 2 lignes
+                        WebkitBoxOrient: "vertical",
+                        maxHeight: "6rem",
+                        minHeight: "6rem", // Hauteur constante
+                        overflow: "hidden",
+                        gap: "1rem", // Espacement entre les compétences
+                      }}
+                    >
+                      <div className="mt-4 flex flex-wrap gap-x-3 gap-y-2">
+                        {job.skills?.length <= 4 ? (
+                          // Si 4 compétences ou moins, on les affiche toutes
+                          <>
+                            {job.skills?.map((skill, index) => (
+                              <span
+                                key={index}
+                                className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm"
+                              >
+                                {skill}
+                              </span>
+                            ))}
+                          </>
+                        ) : (
+                          // Si plus de 4 compétences, on en affiche 4 avec "..."
+                          <>
+                            {job.skills?.slice(0, 4).map((skill, index) => (
+                              <span
+                                key={index}
+                                className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm"
+                              >
+                                {skill}
+                              </span>
+                            ))}
+                            <span className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm">
+                              ...
+                            </span>
+                          </>
+                        )}
+                      </div>
                     </div>
 
-                    <div class="flex justify-center space-x-4">
+                    <div className="flex justify-center space-x-4">
                       {/*job details */}
                       <div className="mt-6 flex justify-center items-center">
                         <Link to={`/jobs/${job._id}`}>

@@ -15,6 +15,7 @@ import "./App.css";
 import AddJob from "./components/jobs/AddJob";
 import UpdateJob from "./components/jobs/UpdateJob";
 import ApplicationDetails from "./components/dashboard/ApplicationDetails";
+import UserApplication from "./components/dashboard/UserApplication";
 
 function App() {
   return (
@@ -55,6 +56,8 @@ function App() {
                 path="/applications/:id"
                 element={<ApplicationDetails />}
               />
+
+              <Route path="/application/:id" element={<UserApplication />} />
 
               <Route path="/jobs" element={<JobList />} />
               <Route path="/jobs/:id" element={<JobDetail />} />

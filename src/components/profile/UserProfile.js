@@ -1,22 +1,34 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 import { useDropzone } from "react-dropzone";
 import { useAuth } from "../../contexts/AuthContext";
 
 const UserProfile = () => {
   const { currentUser } = useAuth();
-  console.log(currentUser);
-
+  const navigate = useNavigate();
   const [profileData, setProfileData] = useState({});
-  const [resume, setResume] = useState([]);
+  const [resume, setResume] = useState(null);
+  const [resumeData, setResumeData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
-  const onDrop = (acceptedFiles) => {
-    console.log("accepted files on drop", acceptedFiles);
+  // Gestion des champs de formulaire
+  const handleChange = (e) => {
+    setProfileData({
+      ...profileData,
+      [e.target.name]: e.target.value,
+    });
+  };
 
-    setResume(acceptedFiles[0]);
+  // Gestion du téléchargement de fichiers
+  const onDrop = (acceptedFiles) => {
+    if (acceptedFiles.length > 0) {
+      setResume(acceptedFiles[0]);
+    } else {
+      setError("Invalid file format. Please upload a PDF, DOC, or DOCX file.");
+    }
   };
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -30,29 +42,37 @@ const UserProfile = () => {
     maxFiles: 1,
   });
 
+  // Chargement initial des données du profil
   useEffect(() => {
     const fetchProfile = async () => {
       try {
         const response = await axios.get("/api/auth/me", {
           headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
         });
-        const { applications, __v, ...restOfData } = response.data;
-        setProfileData(restOfData);
-        console.log("profileData", profileData);
+        const { applications, __v, resumes, ...restOfData } = response.data;
+        setProfileData({ ...restOfData, resumes });
+
+        if (resumes && resumes.length > 0) {
+          const resumeResponse = await axios.get(
+            `/api/resume/user/${currentUser._id}`,
+            {
+              headers: {
+                Authorization: `Bearer ${localStorage.getItem("token")}`,
+              },
+            }
+          );
+          console.log("Fetched resume data", resumeResponse.data);
+          setResumeData(resumeResponse.data);
+        }
       } catch (err) {
-        setError("Failed to load profile data");
+        console.error("Error fetching profile data:", err);
+        setError("Failed to load profile data.");
       }
     };
     fetchProfile();
-  }, []);
+  }, [currentUser]);
 
-  const handleChange = (e) => {
-    setProfileData({
-      ...profileData,
-      [e.target.name]: e.target.value,
-    });
-  };
-
+  // Envoi du formulaire de mise à jour
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -89,46 +109,59 @@ const UserProfile = () => {
     // }
     try {
       const formData = new FormData();
-      console.log("profile data", profileData);
-
-      // Append form fields to FormData
       Object.keys(profileData).forEach((key) => {
-        const value = profileData[key];
         if (key !== "resumes") {
-          if (Array.isArray(value) || typeof value === "object") {
-            // Convert objects/arrays to JSON strings
-            formData.append(key, JSON.stringify(value || []));
-          } else {
-            // Avoid sending empty strings
-            formData.append(key, value || "");
-          }
+          const value = profileData[key];
+          formData.append(key, value || "");
         }
       });
 
-      // Append resume file if available
+      // Ajoutez le fichier sous le nom "file" dans formData
       if (resume) {
-        formData.append("resumes", resume);
-      }
-
-      // Debugging: Log FormData entries
-      for (let [key, value] of formData.entries()) {
-        console.log(`${key}: ${JSON.stringify(value)}`);
+        formData.append("file", resume); // Ici, "resume" est le fichier que vous avez sélectionné
       }
 
       const response = await axios.put("/api/auth/profile", formData, {
         headers: {
-          "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          "Content-Type": "multipart/form-data", // Assurez-vous que le type est correct
+        },
+      });
+
+      setProfileData(response.data.user || response.data);
+      setSuccess("Profile updated successfully.");
+      navigate(0);
+    } catch (err) {
+      setError(
+        err.response?.data?.message ||
+          "Failed to update profile. Please try again."
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteResume = async (resumeId) => {
+    setLoading(true);
+    setError("");
+    try {
+      const response = await axios.delete(`/api/resume/${resumeId}`, {
+        headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
       });
-      const { applications, __v, ...restOfData } = response.data.user;
 
-      setProfileData(restOfData);
-      setSuccess("Profile updated successfully");
+      // Si la suppression est réussie, mettez à jour la liste des CV
+      setResumeData((prevResumes) =>
+        prevResumes.filter((resume) => resume._id !== resumeId)
+      );
+
+      setSuccess("Resume deleted successfully.");
     } catch (err) {
-      console.log(err.response.data);
-
-      setError(err.response?.data?.message || "Failed to update profile");
+      setError(
+        err.response?.data?.message ||
+          "Failed to delete resume. Please try again."
+      );
     } finally {
       setLoading(false);
     }
@@ -154,6 +187,7 @@ const UserProfile = () => {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Champ Nom complet */}
           <div>
             <label
               className="block text-gray-700 text-sm font-bold mb-2"
@@ -172,6 +206,7 @@ const UserProfile = () => {
             />
           </div>
 
+          {/* Champ Email */}
           <div>
             <label
               className="block text-gray-700 text-sm font-bold mb-2"
@@ -189,46 +224,46 @@ const UserProfile = () => {
               required
             />
           </div>
+
+          {/* Gestion des CV */}
           {currentUser?.role === "user" && (
-            <div>
-              <div>
-                <label className="block text-gray-700 text-sm font-bold mb-2">
-                  Resume
-                </label>
-                <div
-                  {...getRootProps()}
-                  className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer ${
-                    isDragActive
-                      ? "border-red-500 bg-red-50"
-                      : "border-gray-300 hover:border-red-500"
-                  }`}
-                >
-                  <input {...getInputProps()} />
-                  {resume ? (
-                    <p className="text-gray-600">
-                      Selected file: {resume.name}
-                    </p>
-                  ) : (
-                    <p className="text-gray-600">
-                      Drag and drop your resume here, or click to select a file
-                      <br />
-                      <span className="text-sm text-gray-500">
-                        (PDF, DOC, DOCX files only)
-                      </span>
-                    </p>
-                  )}
-                </div>
+            <div className="mp-1">
+              <label className="block text-gray-700 text-sm font-bold mb-2">
+                Resume
+              </label>
+              <div
+                {...getRootProps()}
+                className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer ${
+                  isDragActive
+                    ? "border-red-500 bg-red-50"
+                    : "border-gray-300 hover:border-red-500"
+                }`}
+              >
+                <input {...getInputProps()} name="file" type="file" />
+                {resume ? (
+                  <p className="text-gray-600">Selected file: {resume.name}</p>
+                ) : (
+                  <p className="text-gray-600">
+                    Drag and drop your resume here, or click to select a file
+                    <br />
+                    <span className="text-sm text-gray-500">
+                      (PDF, DOC, DOCX files only)
+                    </span>
+                  </p>
+                )}
               </div>
 
-              {/*show cv */}
               <div>
-                <label className="block text-gray-700 font-bold mb-2">
+                <label className="block text-gray-700 text-sm font-bold mb-2 mt-6">
                   Uploaded Resumes
                 </label>
-                {profileData.resumes && profileData.resumes.length > 0 ? (
+                {resumeData.length > 0 ? (
                   <ul className="list-disc pl-5">
-                    {profileData.resumes.map((resume, index) => (
-                      <li key={index}>
+                    {resumeData.map((resume, index) => (
+                      <li
+                        key={index}
+                        className="flex items-center justify-between"
+                      >
                         <a
                           href={`http://localhost:5001/${resume.path}`}
                           target="_blank"
@@ -237,6 +272,12 @@ const UserProfile = () => {
                         >
                           {resume.name}
                         </a>
+                        <button
+                          onClick={() => handleDeleteResume(resume._id)}
+                          className="ml-2 text-red-500 hover:text-red-700"
+                        >
+                          Delete
+                        </button>
                       </li>
                     ))}
                   </ul>

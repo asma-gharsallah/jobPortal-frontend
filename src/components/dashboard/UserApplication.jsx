@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useAuth } from "../../contexts/AuthContext";
 
-const ApplicationDetails = () => {
+const UserApplication = () => {
   const { id } = useParams(); // ID of the application
   const navigate = useNavigate();
   const { currentUser } = useAuth();
@@ -101,12 +101,10 @@ const ApplicationDetails = () => {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4">
-      {/*pour petite ecrant "flex-col md:flex-row gap-6" */}
+    <div className="max-w-6xl mx-auto px-4">
       <div className="bg-white rounded-lg shadow-md p-6 flex flex-col md:flex-row gap-6">
-
           {/* Left Column - Job Details */}
-          <div className="w-full md:w-1/2 border-r border-gray-200 md:pr-6">
+          <div className="w-full md:w-1/2 border-r md:pr-6 border-gray-200">
           <div className="border-b border-gray-200 pb-6">
             <h1 className="text-3xl font-bold text-gray-900 mb-2">
               {application.job.title}
@@ -161,74 +159,63 @@ const ApplicationDetails = () => {
         </div>
 
         {/* Right Column */}
-        <div className="w-full md:w-1/2">
+        <div className="w-full md:w-1/2 pl-0 md:pl-6">
         {/* Applicant Details */}
-          <div className="border-b border-gray-200 pb-6">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">
-            Applicant Details
-          </h2>
-          <p><strong>Name: </strong>{application.applicant.name}</p>
-          <p><strong>Email: </strong>{application.applicant.email}</p>
-          <p>
-            <strong>Resume: </strong>
-            <a
-              href={`http://localhost:5001/${application.resume.path}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-red-600 hover:underline"
-            >
-              {application.resume.name}
-            </a>
-          </p>
-          <p><strong>Status: </strong>{application.status}</p>
-        </div>
-          {/* Notes Section */}
-          <div className="border-b border-gray-200 pb-6">
-            <h2 className="text-xl font-semibold text-gray-900 mt-6 mb-4">
-              Add Note
-            </h2>
-            <textarea
-              value={note}
-              onChange={(e) => setNote(e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-red-500"
-              rows="4"
-              placeholder="Write your notes here..."
-            />
-            <button
-              onClick={handleAddNote}
-              className="bg-red-600 text-white px-7 py-2 mt-4 rounded-lg hover:bg-red-700"
-            >
-              Add Note
-            </button>
-          </div>
-
-          {/* Update Status Section */}
           <div className=" border-gray-200 pb-6">
-            <h2 className="text-xl font-semibold text-gray-900 mt-6">
-              Update Status
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            Your Details
+          </h1>
+          
+          <div className="py-6 border-t border-gray-200">
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">
+               Name: 
             </h2>
-            <select
-              value={newStatus}
-              onChange={(e) => setNewStatus(e.target.value)}
-              className=" border border-gray-300 rounded-lg py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
-
-            >
-              <option value="pending">Pending</option>
-              <option value="accepted">Accepted</option>
-              <option value="rejected">Rejected</option>
-              <option value="under_review">Under Review</option>
-            </select>
-            <button
-              onClick={updateApplicationStatus}
-              className="bg-red-600 text-white px-8 ml-2 py-2 mt-4 rounded-lg hover:bg-red-700"
-            >
-              Update Status
-            </button>
+            <div className="prose max-w-none text-gray-600">
+            {application.applicant.name}
+            </div>
           </div>
+
+          <div className="py-6 border-t border-gray-200">
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">
+            Email: 
+            </h2>
+            <div className="prose max-w-none text-gray-600">
+            {application.applicant.email}
+            </div>
+          </div>
+
+          <div className="py-6 border-t border-gray-200">
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">
+            Resume: 
+            </h2>
+            <div className="prose max-w-none text-gray-600">
+              <a
+                href={`http://localhost:5001/${application.resume.path}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-red-600 hover:underline"
+              >
+                {application.resume.name}
+              </a>           
+             </div>
+          </div>
+
+          <div className="py-6 border-t border-gray-200">
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">
+            Status: 
+            </h2>
+            <div className="prose max-w-none text-gray-600">
+            {application.status}
+            </div>
+          </div>
+          
+          
         </div>
       </div>
+    </div>
+
     </div>
   );
 };
 
-export default ApplicationDetails;
+export default UserApplication;

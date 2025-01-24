@@ -37,12 +37,12 @@ const JobDetail = () => {
 
   const fetchUserResumes = async () => {
     try {
-      const response = await axios.get("/api/auth/me", {
+      const response = await axios.get(`/api/resume/user/${currentUser._id}`, {
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
       });
 
       // Assuming response.data contains an array of resumes, update state accordingly.
-      setUserResumes(response.data.resumes || []); // Make sure the resumes data exists
+      setUserResumes(response.data || []); // Make sure the resumes data exists
     } catch (err) {
       console.error("Failed to fetch user resumes:", err);
     }
@@ -101,9 +101,13 @@ const JobDetail = () => {
               {job.title}
             </h1>
             <div className="flex items-center text-gray-600 space-x-4">
-              <span className="font-semibold">{job.company}</span>
               <span>•</span>
               <span>{job.location}</span>
+              <span>•</span>
+              <span>{job.type}</span>
+              <span>•</span>
+              <span>{job.experience} years of experience</span>{" "}
+              {/* Années d'expérience */}
               <span>•</span>
               <span>
                 ${job.salary ? job.salary.toLocaleString() : "N/A"} / year
@@ -128,6 +132,20 @@ const JobDetail = () => {
             </h2>
             <ul className="list-disc pl-5 text-gray-600">
               {job.requirements.map((req, index) => (
+                <li key={index} className="mb-2">
+                  {req}
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Responsibilities */}
+          <div className="py-6 border-t border-gray-200">
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">
+              Responsibilities
+            </h2>
+            <ul className="list-disc pl-5 text-gray-600">
+              {job.responsibilities.map((req, index) => (
                 <li key={index} className="mb-2">
                   {req}
                 </li>
@@ -188,11 +206,30 @@ const JobDetail = () => {
                         {userResumes.length === 0 ? (
                           <p className="text-gray-500">No resumes available.</p>
                         ) : (
-                          <div className="text-gray-700">
+                          <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
-                              Your Resume
+                              Select a Resume
                             </label>
-                            <p>{userResumes[0].name}</p>
+                            <select
+                              value={applicationData.resumeId}
+                              onChange={(e) =>
+                                setApplicationData({
+                                  ...applicationData,
+                                  resumeId: e.target.value,
+                                })
+                              }
+                              className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-red-500"
+                              required
+                            >
+                              <option value="" disabled>
+                                Select your resume
+                              </option>
+                              {userResumes.map((resume) => (
+                                <option key={resume._id} value={resume._id}>
+                                  {resume.name}
+                                </option>
+                              ))}
+                            </select>
                           </div>
                         )}
                       </div>
