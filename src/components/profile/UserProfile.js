@@ -7,7 +7,7 @@ import { useAuth } from "../../contexts/AuthContext";
 const UserProfile = () => {
   const { currentUser } = useAuth();
   const navigate = useNavigate();
-  const [profileData, setProfileData] = useState({});
+  const [profileData, setProfileData] = useState({ name: "", email: "" });
   const [resume, setResume] = useState(null);
   const [resumeData, setResumeData] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -231,27 +231,36 @@ const UserProfile = () => {
               <label className="block text-gray-700 text-sm font-bold mb-2">
                 Resume
               </label>
-              <div
-                {...getRootProps()}
-                className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer ${
-                  isDragActive
-                    ? "border-red-500 bg-red-50"
-                    : "border-gray-300 hover:border-red-500"
-                }`}
-              >
-                <input {...getInputProps()} name="file" type="file" />
-                {resume ? (
-                  <p className="text-gray-600">Selected file: {resume.name}</p>
-                ) : (
-                  <p className="text-gray-600">
-                    Drag and drop your resume here, or click to select a file
-                    <br />
-                    <span className="text-sm text-gray-500">
-                      (PDF, DOC, DOCX files only)
-                    </span>
-                  </p>
-                )}
-              </div>
+              {resumeData.length < 5 ? (
+                <div
+                  {...getRootProps()}
+                  className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer ${
+                    isDragActive
+                      ? "border-red-500 bg-red-50"
+                      : "border-gray-300 hover:border-red-500"
+                  }`}
+                >
+                  <input {...getInputProps()} name="file" type="file" />
+                  {resume ? (
+                    <p className="text-gray-600">
+                      Selected file: {resume.name}
+                    </p>
+                  ) : (
+                    <p className="text-gray-600">
+                      Drag and drop your resume here, or click to select a file
+                      <br />
+                      <span className="text-sm text-gray-500">
+                        (PDF, DOC, DOCX files only)
+                      </span>
+                    </p>
+                  )}
+                </div>
+              ) : (
+                <p className="text-red-500 text-sm mt-2">
+                  You can upload a maximum of 5 resumes. To upload a new one,
+                  delete an existing resume.
+                </p>
+              )}
 
               <div>
                 <label className="block text-gray-700 text-sm font-bold mb-2 mt-6">

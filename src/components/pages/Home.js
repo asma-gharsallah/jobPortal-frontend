@@ -52,7 +52,7 @@ const Home = () => {
                 id="location"
                 type="text"
                 className="block w-full px-4 py-3 text-base text-gray-900 placeholder-gray-500 border border-transparent rounded-md focus:outline-none focus:ring-2 focus:ring-red-400 focus:border-transparent"
-                placeholder="City, state, or remote"
+                placeholder="City, location"
                 value={location}
                 onChange={(e) => setLocation(e.target.value)}
               />
@@ -60,7 +60,7 @@ const Home = () => {
             <div className="mt-3 sm:mt-0 sm:ml-3">
               <button
                 type="submit"
-                className="block w-full px-6 py-3 border border-transparent text-base font-medium rounded-md text-red-600 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 sm:px-10"
+                className="block w-full px-6 py-3 border border-transparent text-base font-medium rounded-md text-red-600 bg-white focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 sm:px-10  hover:bg-red-900 hover:text-white"
               >
                 Search Jobs
               </button>

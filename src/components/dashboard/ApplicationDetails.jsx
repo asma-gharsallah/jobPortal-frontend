@@ -42,6 +42,11 @@ const ApplicationDetails = () => {
       return;
     }
 
+    if (application.status === "withdrawn") {
+      alert("You cannot change the status because it is set to 'withdrawn'.");
+      return;
+    }
+
     try {
       const response = await axios.patch(
         `/api/applications/${id}/status`,
@@ -207,10 +212,16 @@ const ApplicationDetails = () => {
             <h2 className="text-xl font-semibold text-gray-900 mt-6">
               Update Status
             </h2>
+            {application.status === "withdrawn" ? (
+              <p className="text-red-500 text-sm mt-2">
+                The status is set to "withdrawn" and cannot be updated.
+              </p>
+            ) : (
+              <>
             <select
               value={newStatus}
               onChange={(e) => setNewStatus(e.target.value)}
-              className=" border border-gray-300 rounded-lg py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+              className=" border border-gray-300 rounded-lg py-2 focus:outline-none focus:ring-2 focus:ring-red-500"
 
             >
               <option value="pending">Pending</option>
@@ -224,6 +235,8 @@ const ApplicationDetails = () => {
             >
               Update Status
             </button>
+            </>
+            )}
           </div>
         </div>
       </div>
