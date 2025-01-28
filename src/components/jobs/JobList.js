@@ -40,7 +40,7 @@ const JobList = () => {
 
   useEffect(() => {
     fetchJobs();
-  }, [filters, pagination.currentPage]);
+  }, [pagination.currentPage]);
 
   const fetchJobs = async () => {
     setLoading(true);
@@ -79,6 +79,11 @@ const JobList = () => {
     setPagination({ ...pagination, currentPage: 1 });
   };
 
+  const handleSubmitFilters = () => {
+    // Cette fonction met à jour les filtres et déclenche la récupération des jobs
+    fetchJobs();
+  };
+
   const deleteJob = async (jobId) => {
     try {
       // Vérification si l'utilisateur est authentifié et dispose d'un token
@@ -109,12 +114,17 @@ const JobList = () => {
 
   // Appliquer le filtrage sur les jobs en fonction des mots-clés
   const filteredJobs = jobs.filter((job) => {
+    const location = filters.location.toLowerCase();
     const searchTerm = filters.searchTerm.toLowerCase();
     return (
+      // Vérification de la correspondance du titre, description, catégorie, ou compétences
       (job.title.toLowerCase().includes(searchTerm) ||
         job.description.toLowerCase().includes(searchTerm) ||
         job.category.toLowerCase().includes(searchTerm) ||
         job.skills.some((skill) => skill.toLowerCase().includes(searchTerm))) &&
+      // Vérification de la correspondance de la location
+      (job.location.toLowerCase().includes(location) || location === "") &&
+      // Vérification du statut (pour les utilisateurs non-admin)
       (currentUser?.role === "admin" || job.status === "active")
     );
   });
@@ -140,58 +150,62 @@ const JobList = () => {
       {/* Filters */}
       <div className="max-w-5xl bg-white p-6 rounded-lg shadow-md mb-6 w-full  mx-auto">
         <h3 className="text-xl font-semibold text-gray-800 mb-4">Filters</h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mx-auto">
-          <div className="w-full">
-            <label className="block text-md font-medium text-gray-700 mb-2">
-              Category
-            </label>
-            <select
-              name="category"
-              value={filters.category}
-              onChange={handleFilterChange}
-              className="w-full border border-gray-300 rounded-lg px-5 py-3 text-lg focus:outline-none focus:ring-2 focus:ring-red-500"
-            >
-              <option value="">All Categories</option>
-              <option value="Software Development">Software Development</option>
-              <option value="Design">Design</option>
-              <option value="Marketing">Marketing</option>
-              <option value="Sales">Sales</option>
-              <option value="Customer Service">Customer Service</option>
-              <option value="Data Science">Data Science</option>
-              <option value="Project Management">Project Management</option>
-              <option value="Human Resources">Human Resources</option>
-              <option value="Other">Other</option>
-            </select>
-          </div>
+        <form onSubmit={handleSubmitFilters}>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mx-auto">
+            <div className="w-full">
+              <label className="block text-md font-medium text-gray-700 mb-2">
+                Category
+              </label>
+              <select
+                name="category"
+                value={filters.category}
+                onChange={handleFilterChange}
+                className="w-full border border-gray-300 rounded-lg px-5 py-3 text-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+              >
+                <option value="">All Categories</option>
+                <option value="Software Development">
+                  Software Development
+                </option>
+                <option value="Design">Design</option>
+                <option value="Marketing">Marketing</option>
+                <option value="Sales">Sales</option>
+                <option value="Customer Service">Customer Service</option>
+                <option value="Data Science">Data Science</option>
+                <option value="Project Management">Project Management</option>
+                <option value="Human Resources">Human Resources</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
 
-          <div className="w-full">
-            <label className="block text-md font-medium text-gray-700 mb-2">
-              Location
-            </label>
-            <input
-              type="text"
-              name="location"
-              value={filters.location}
-              onChange={handleFilterChange}
-              placeholder="Any location"
-              className="w-full border border-gray-300 rounded-lg px-4 py-3 text-lg focus:outline-none focus:ring-2 focus:ring-red-500"
-            />
-          </div>
+            <div className="w-full">
+              <label className="block text-md font-medium text-gray-700 mb-2">
+                Location
+              </label>
+              <input
+                type="text"
+                name="location"
+                value={filters.location}
+                onChange={handleFilterChange}
+                placeholder="Any location"
+                className="w-full border border-gray-300 rounded-lg px-4 py-3 text-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+              />
+            </div>
 
-          <div className="w-full">
-            <label className="block text-md font-medium text-gray-700 mb-2">
-              Keyword
-            </label>
-            <input
-              type="text"
-              name="searchTerm"
-              value={filters.searchTerm}
-              onChange={handleFilterChange}
-              placeholder="Search by searchTerm"
-              className="w-full border border-gray-300 rounded-lg px-4 py-3 text-lg focus:outline-none focus:ring-2 focus:ring-red-500"
-            />
+            <div className="w-full">
+              <label className="block text-md font-medium text-gray-700 mb-2">
+                Keyword
+              </label>
+              <input
+                type="text"
+                name="searchTerm"
+                value={filters.searchTerm}
+                onChange={handleFilterChange}
+                placeholder="Search by searchTerm"
+                className="w-full border border-gray-300 rounded-lg px-4 py-3 text-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+              />
+            </div>
           </div>
-        </div>
+        </form>
       </div>
 
       {/* Add Job Button */}

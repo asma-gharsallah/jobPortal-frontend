@@ -15,7 +15,7 @@ const ApplicationStatus = ({ status }) => {
       case "rejected":
         return "bg-red-100 text-red-800";
       case "withdrawn":
-        return "bg-gray-100 text-gray-600"; 
+        return "bg-gray-100 text-gray-600";
       default:
         return "bg-gray-100 text-gray-800";
     }
@@ -45,13 +45,17 @@ const Dashboard = () => {
   }, [currentUser]);
 
   const fetchApplications = async () => {
+    setLoading(true);
+    setError("");
     try {
-        // Pour un utilisateur normal, récupérer uniquement ses candidatures
-        const response = await axios.get("/api/applications/my-applications/", {
-          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-        });
-        setApplications(response.data.applications);
-      
+      const response = await axios.get("/api/applications/my-applications/", {
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+      });
+      setApplications(
+        response.data.applications.filter(
+          (application) => application.status !== "withdrawn"
+        )
+      );
     } catch (err) {
       setError("Failed to fetch applications");
     } finally {
@@ -67,24 +71,18 @@ const Dashboard = () => {
         {}, // No payload is needed since the backend infers the action
         { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
       );
-  
+
       // Update the application status in the state to "withdrawn"
       setApplications((prevApplications) =>
         prevApplications.filter((application) => application._id !== applicationId) // Remove from the list
       );
-  
+
       alert(response.data.message); // Show success message
     } catch (err) {
       console.error("Failed to withdraw application:", err.response?.data?.message || err.message);
       alert(err.response?.data?.message || "Failed to withdraw application.");
     }
   };
-  
-
-  // Filter out withdrawn applications from the list
-  const filteredApplications = applications.filter(
-    (application) => application.status !== "withdrawn"
-  );
 
   if (loading) {
     return (
@@ -97,8 +95,8 @@ const Dashboard = () => {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div className="mb-8">
-      <h2 className="text-4xl font-bold text-gray-700 mb-4 text-center">
-      Dash<span className="text-red-500">board</span>
+        <h2 className="text-4xl font-bold text-gray-700 mb-4 text-center">
+          Dash<span className="text-red-500">board</span>
         </h2>
         <p className="mt-2 text-gray-600">Welcome back, {currentUser.name}</p>
       </div>
@@ -124,7 +122,7 @@ const Dashboard = () => {
           {applications.length === 0 ? (
             <div className="text-center py-8">
               <p className="text-gray-600 mb-4">
-                  You haven't applied to any jobs yet.
+                You haven't applied to any jobs yet.
               </p>
               <Link
                 to="/jobs"
@@ -199,8 +197,6 @@ const Dashboard = () => {
           )}
         </div>
       </div>
-
-      {/* Recent Activity or Recommended Jobs section could be added here */}
     </div>
   );
 };
