@@ -58,7 +58,7 @@ const AddJob = () => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-16">
       <h2 className="text-4xl font-bold text-gray-700 mb-4 text-center">
         Add New <span className="text-red-500">Job</span>
       </h2>

@@ -106,7 +106,7 @@ const ApplicationDetails = () => {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4">
+    <div className="max-w-7xl mx-auto px-4 pt-16">
       {/*pour petite ecrant "flex-col md:flex-row gap-6" */}
       <div className="bg-white rounded-lg shadow-md p-6 flex flex-col md:flex-row gap-6">
 

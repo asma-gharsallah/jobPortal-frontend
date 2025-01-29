@@ -92,7 +92,7 @@ const JobDetail = () => {
   }
 
   return (
-    <div className="max-w-3xl mx-auto px-4">
+    <div className="max-w-3xl mx-auto px-4 pt-16">
       <div className="bg-white rounded-lg shadow-md">
         <div className="p-6">
           {/* Job Header */}

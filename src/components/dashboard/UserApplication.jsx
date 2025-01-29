@@ -101,7 +101,7 @@ const UserApplication = () => {
   }
 
   return (
-    <div className="max-w-6xl mx-auto px-4">
+    <div className="max-w-6xl mx-auto px-4 pt-16">
       <div className="bg-white rounded-lg shadow-md p-6 flex flex-col md:flex-row gap-6">
           {/* Left Column - Job Details */}
           <div className="w-full md:w-1/2 border-r md:pr-6 border-gray-200">

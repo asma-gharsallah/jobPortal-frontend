@@ -27,7 +27,6 @@ const JobList = () => {
   const { location: jobLocation, searchTerm: jobKeyword } =
     location.state || {};
 
-  // Utilisation d'un seul useEffect pour mettre à jour les filtres en fonction de la location et du searchTerm
   useEffect(() => {
     if (jobLocation || jobKeyword) {
       setFilters((prevFilters) => ({
@@ -40,7 +39,7 @@ const JobList = () => {
 
   useEffect(() => {
     fetchJobs();
-  }, [pagination.currentPage]);
+  }, [filters, pagination.currentPage]);
 
   const fetchJobs = async () => {
     setLoading(true);
@@ -51,14 +50,13 @@ const JobList = () => {
         ...Object.fromEntries(Object.entries(filters).filter(([_, v]) => v)),
       });
 
-      // Ajoutez un filtre pour les utilisateurs non-admin
+      // Add filter for non-admin users (active jobs)
       if (currentUser?.role !== "admin") {
         queryParams.append("status", "active");
       }
 
       const response = await axios.get(`/api/jobs?${queryParams.toString()}`);
       setJobs(response.data.jobs);
-      console.log(response.data.jobs);
 
       setPagination({
         currentPage: response.data.currentPage,
@@ -80,51 +78,37 @@ const JobList = () => {
   };
 
   const handleSubmitFilters = () => {
-    // Cette fonction met à jour les filtres et déclenche la récupération des jobs
     fetchJobs();
   };
 
   const deleteJob = async (jobId) => {
     try {
-      // Vérification si l'utilisateur est authentifié et dispose d'un token
       if (!localStorage.getItem("token")) {
-        throw new Error(
-          "Authentication token is missing. Please log in again."
-        );
+        throw new Error("Authentication token is missing.");
       }
 
-      // Appel API pour supprimer le job en incluant l'ID du job
       await axios.delete(`/api/jobs/${jobId}`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }, // Ajout du token pour l'autorisation
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
       });
 
-      // Mettre à jour la liste des jobs localement après suppression
       setJobs((prevJobs) => prevJobs.filter((job) => job._id !== jobId));
       alert("Job deleted successfully.");
     } catch (error) {
       console.error("Failed to delete job:", error);
-
-      // Gestion des erreurs et message d'alerte
-      const errorMessage =
-        error.response?.data?.message ||
-        "Failed to delete job. Please try again.";
-      alert(errorMessage);
+      alert("Failed to delete job. Please try again.");
     }
   };
 
-  // Appliquer le filtrage sur les jobs en fonction des mots-clés
+  // Filtering jobs on the frontend
   const filteredJobs = jobs.filter((job) => {
     const location = filters.location.toLowerCase();
     const searchTerm = filters.searchTerm.toLowerCase();
     return (
-      // Vérification de la correspondance du titre, description, catégorie, ou compétences
       (job.title.toLowerCase().includes(searchTerm) ||
         job.description.toLowerCase().includes(searchTerm) ||
         job.category.toLowerCase().includes(searchTerm) ||
         job.skills.some((skill) => skill.toLowerCase().includes(searchTerm))) &&
-      // Vérification de la correspondance de la location
       (job.location.toLowerCase().includes(location) || location === "") &&
-      // Vérification du statut (pour les utilisateurs non-admin)
       (currentUser?.role === "admin" || job.status === "active")
     );
   });
@@ -146,7 +130,7 @@ const JobList = () => {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16">
       {/* Filters */}
       <div className="max-w-5xl bg-white p-6 rounded-lg shadow-md mb-6 w-full  mx-auto">
         <h3 className="text-xl font-semibold text-gray-800 mb-4">Filters</h3>
@@ -229,10 +213,10 @@ const JobList = () => {
             {filteredJobs.map((job) => (
               <div
                 key={job._id}
-                className="bg-white rounded-lg shadow-md hover:shadow-gray-400 transition-shadow duration-200 "
+                className="group bg-white rounded-lg shadow-md hover:shadow-gray-400  hover:-translate-y-1 transition-all duration-500 ease-out"
               >
                 <div className="p-6">
-                  <h3 className="text-xl font-semibold text-gray-800 mb-2 hover:text-red-500">
+                  <h3 className="text-xl font-semibold text-gray-800 mb-2 group-hover:text-red-600">
                     <Link to={`/jobs/${job._id}`}>{job.title}</Link>
                   </h3>
                   <div className="flex items-center text-sm text-gray-500 space-x-4">
@@ -314,7 +298,7 @@ const JobList = () => {
                             </button>
                           </Link>
                         </div>
-                        {/* Bouton Delete (visible uniquement pour l'admin) */}
+                        {/* Delete Button (visible only for admin users) */}
                         <div className="mt-6 flex justify-center items-center">
                           <button
                             onClick={() => {

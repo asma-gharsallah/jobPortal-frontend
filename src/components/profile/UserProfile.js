@@ -168,7 +168,7 @@ const UserProfile = () => {
   };
 
   return (
-    <div className="max-w-2xl mx-auto">
+    <div className="max-w-2xl mx-auto pt-16">
       <div className="bg-white p-8 rounded-lg shadow-md">
         <h2 className="text-2xl font-bold mb-6 text-gray-800">
           Profile Settings
@@ -277,7 +277,7 @@ const UserProfile = () => {
                           href={`http://localhost:5001/${resume.path}`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-red-600 hover:underline"
+                          className="text-red-500 hover:text-red-700 cursor-pointer"
                         >
                           {resume.name}
                         </a>
