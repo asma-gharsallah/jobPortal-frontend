@@ -59,7 +59,7 @@ const Home = () => {
   };
 
   return (
-    <div className="relative pt-16">
+    <div className="relative">
       {/* Welcome Section */}
       <motion.div
         className="bg-gradient-to-r from-red-700 via-red-600 to-red-500 text-white w-full"

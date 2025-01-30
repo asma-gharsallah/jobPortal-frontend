@@ -130,7 +130,7 @@ const JobList = () => {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       {/* Filters */}
       <div className="max-w-5xl bg-white p-6 rounded-lg shadow-md mb-6 w-full  mx-auto">
         <h3 className="text-xl font-semibold text-gray-800 mb-4">Filters</h3>

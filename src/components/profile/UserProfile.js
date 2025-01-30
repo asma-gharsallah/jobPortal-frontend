@@ -72,43 +72,46 @@ const UserProfile = () => {
     fetchProfile();
   }, [currentUser]);
 
+  // try {
+  //   const formData = new FormData();
+  //   Object.keys(profileData).forEach((key) => {
+  //     formData.append(key, profileData[key]);
+  //   });
+  //   console.log("formdata", formData);
+
+  //   if (resume) {
+  //     formData.append("resume", resume);
+  //   }
+  //   for (let [key, value] of formData.entries()) {
+  //     console.log(`${key}: ${value}`);
+  //   }
+  //   const response = await axios.put("/api/auth/profile", formData, {
+  //     headers: {
+  //       Authorization: `Bearer ${localStorage.getItem("token")}`,
+  //     },
+  //   });
+  //   console.log("update response", response);
+  //   console.log("update formData", formData);
+
+  //   setProfileData(response.data.user || response.data);
+  //   setSuccess("Profile updated successfully");
+  // } catch (err) {
+  //   setError(err.response?.data?.message || "Failed to update profile");
+  // } finally {
+  //   setLoading(false);
+  // }
   // Envoi du formulaire de mise à jour
+
   const handleSubmit = async (e) => {
-    e.preventDefault();
+    e.preventDefault(); // Empêcher la soumission automatique du formulaire
+
     setLoading(true);
     setError("");
     setSuccess("");
-
-    // try {
-    //   const formData = new FormData();
-    //   Object.keys(profileData).forEach((key) => {
-    //     formData.append(key, profileData[key]);
-    //   });
-    //   console.log("formdata", formData);
-
-    //   if (resume) {
-    //     formData.append("resume", resume);
-    //   }
-    //   for (let [key, value] of formData.entries()) {
-    //     console.log(`${key}: ${value}`);
-    //   }
-    //   const response = await axios.put("/api/auth/profile", formData, {
-    //     headers: {
-    //       Authorization: `Bearer ${localStorage.getItem("token")}`,
-    //     },
-    //   });
-    //   console.log("update response", response);
-    //   console.log("update formData", formData);
-
-    //   setProfileData(response.data.user || response.data);
-    //   setSuccess("Profile updated successfully");
-    // } catch (err) {
-    //   setError(err.response?.data?.message || "Failed to update profile");
-    // } finally {
-    //   setLoading(false);
-    // }
     try {
       const formData = new FormData();
+
+      // Ajouter les données du profil (nom, email, etc.)
       Object.keys(profileData).forEach((key) => {
         if (key !== "resumes") {
           const value = profileData[key];
@@ -116,15 +119,16 @@ const UserProfile = () => {
         }
       });
 
-      // Ajoutez le fichier sous le nom "file" dans formData
+      // Ajouter le fichier du CV, si sélectionné
       if (resume) {
-        formData.append("file", resume); // Ici, "resume" est le fichier que vous avez sélectionné
+        formData.append("file", resume);
       }
 
+      // Effectuer la requête PUT pour mettre à jour le profil
       const response = await axios.put("/api/auth/profile", formData, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
-          "Content-Type": "multipart/form-data", // Assurez-vous que le type est correct
+          "Content-Type": "multipart/form-data",
         },
       });
 
@@ -141,9 +145,17 @@ const UserProfile = () => {
     }
   };
 
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault(); // Empêche la soumission du formulaire quand Entrée est pressée
+    }
+  };
+
   const handleDeleteResume = async (resumeId) => {
     setLoading(true);
     setError("");
+    setSuccess("");
+
     try {
       const response = await axios.delete(`/api/resume/${resumeId}`, {
         headers: {
@@ -151,24 +163,57 @@ const UserProfile = () => {
         },
       });
 
-      // Si la suppression est réussie, mettez à jour la liste des CV
+      // Suppression réussie
       setResumeData((prevResumes) =>
         prevResumes.filter((resume) => resume._id !== resumeId)
       );
-
       setSuccess("Resume deleted successfully.");
     } catch (err) {
-      setError(
-        err.response?.data?.message ||
-          "Failed to delete resume. Please try again."
-      );
+      if (err.response?.status === 409) {
+        // Un message de confirmation si le CV a des applications associées
+        const { message, applicationIds } = err.response.data;
+        const confirmDelete = window.confirm(`${message}`);
+
+        if (!confirmDelete) {
+          setLoading(false);
+          return;
+        }
+
+        try {
+          // Supprimer le CV et ses applications après confirmation
+          await axios.delete(`/api/resume/${resumeId}`, {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+              "Content-Type": "application/json",
+            },
+            data: { confirmDelete: true }, // Indique au backend de tout supprimer
+          });
+
+          setResumeData((prevResumes) =>
+            prevResumes.filter((resume) => resume._id !== resumeId)
+          );
+          setSuccess(
+            "The resume and associated applications have been deleted successfully."
+          );
+        } catch (finalErr) {
+          setError(
+            finalErr.response?.data?.message ||
+              "Failed to delete resume and applications. Please try again."
+          );
+        }
+      } else {
+        setError(
+          err.response?.data?.message ||
+            "Failed to delete resume. Please try again."
+        );
+      }
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="max-w-2xl mx-auto pt-16">
+    <div className="max-w-2xl mx-auto">
       <div className="bg-white p-8 rounded-lg shadow-md">
         <h2 className="text-2xl font-bold mb-6 text-gray-800">
           Profile Settings
@@ -186,7 +231,7 @@ const UserProfile = () => {
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form className="space-y-6">
           {/* Champ Nom complet */}
           <div>
             <label
@@ -202,6 +247,7 @@ const UserProfile = () => {
               className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-red-500"
               value={profileData.name}
               onChange={handleChange}
+              onKeyDown={handleKeyDown}
               required
             />
           </div>
@@ -221,6 +267,7 @@ const UserProfile = () => {
               className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-red-500"
               value={profileData.email}
               onChange={handleChange}
+              onKeyDown={handleKeyDown}
               required
             />
           </div>
@@ -298,7 +345,7 @@ const UserProfile = () => {
           )}
 
           <button
-            type="submit"
+            onClick={handleSubmit}
             className="w-full bg-red-600 text-white py-2 px-4 rounded hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50 disabled:opacity-50"
             disabled={loading}
           >

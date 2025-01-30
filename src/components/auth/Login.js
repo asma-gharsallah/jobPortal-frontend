@@ -31,7 +31,7 @@ const Login = () => {
   };
 
   return (
-    <div className="max-w-md mx-auto pt-16">
+    <div className="max-w-md mx-auto">
       <h2 className="text-4xl font-bold text-gray-800 text-center mb-6">
         Login
       </h2>
