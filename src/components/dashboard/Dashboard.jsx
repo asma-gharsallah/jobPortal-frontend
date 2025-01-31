@@ -40,6 +40,7 @@ const Dashboard = () => {
     location.state?.message || ""
   );
 
+
   useEffect(() => {
     fetchApplications();
   }, [currentUser]);
@@ -178,17 +179,22 @@ const Dashboard = () => {
                       </td>
                       <td>
                         <button
+                          disabled={application.status !== "pending"}
+
                           onClick={() => {
                             if (window.confirm("Are you sure you want to withdraw this application?")) {
                               handleWithdrawApplication(application._id);
                             }
                           }}
-                          className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700"
+                          className={`px-4 py-2 rounded-lg text-white ml-8 font-semibold transition ${
+                            application.status === "pending" 
+                              ? "bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 cursor-pointer"
+                              : "bg-gray-400 cursor-not-allowed"
+                          }`}
                         >
                           Withdraw
                         </button>
                       </td>
-
                     </tr>
                   ))}
                 </tbody>

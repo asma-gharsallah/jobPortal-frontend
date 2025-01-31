@@ -6,8 +6,6 @@ import { useLocation } from "react-router-dom";
 
 const JobList = () => {
   const { currentUser } = useAuth();
-  console.log(currentUser);
-
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -24,18 +22,22 @@ const JobList = () => {
   });
 
   const location = useLocation();
-  const { location: jobLocation, searchTerm: jobKeyword } =
-    location.state || {};
+  const {
+    location: jobLocation,
+    searchTerm: jobKeyword,
+    category: jobCategory,
+  } = location.state || {};
 
   useEffect(() => {
-    if (jobLocation || jobKeyword) {
+    if (jobLocation || jobKeyword || jobCategory) {
       setFilters((prevFilters) => ({
         ...prevFilters,
         location: jobLocation || prevFilters.location,
         searchTerm: jobKeyword || prevFilters.searchTerm,
+        category: jobCategory || prevFilters.category, // Ajout de la catégorie ici
       }));
     }
-  }, [jobLocation, jobKeyword]);
+  }, [jobLocation, jobKeyword, jobCategory]);
 
   useEffect(() => {
     fetchJobs();
@@ -103,16 +105,17 @@ const JobList = () => {
   const filteredJobs = jobs.filter((job) => {
     const location = filters.location.toLowerCase();
     const searchTerm = filters.searchTerm.toLowerCase();
+    const category = filters.category.toLowerCase(); // Filtrer par catégorie
     return (
       (job.title.toLowerCase().includes(searchTerm) ||
         job.description.toLowerCase().includes(searchTerm) ||
         job.category.toLowerCase().includes(searchTerm) ||
         job.skills.some((skill) => skill.toLowerCase().includes(searchTerm))) &&
       (job.location.toLowerCase().includes(location) || location === "") &&
+      (category === "" || job.category.toLowerCase().includes(category)) && // Condition pour la catégorie
       (currentUser?.role === "admin" || job.status === "active")
     );
   });
-
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
