@@ -214,11 +214,10 @@ const UserProfile = () => {
 
   return (
     <div className="max-w-2xl mx-auto">
+      <h2 className="text-4xl font-bold text-gray-700 mb-4 text-center">
+        Profile <span className="text-red-500">Settings</span>
+      </h2>
       <div className="bg-white p-8 rounded-lg shadow-md">
-        <h2 className="text-2xl font-bold mb-6 text-gray-800">
-          Profile Settings
-        </h2>
-
         {error && (
           <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
             {error}
